@@ -4,6 +4,35 @@ import 'base_picker.dart';
 typedef BaseAutoPickerSelectChange = List<String> Function(String text, PickerIndexPath indexPath);
 typedef BaseAutoPickerConfirm = Function(List<String> titles);
 
+showBaseAutoPicker(
+  BuildContext context,
+  List<String> initialTitles,
+  List<String> Function(String text, PickerIndexPath indexPath) list,
+  Function(List<String> titles) confirm, {
+  double pickerHeight = 150.0,
+  Color pickerColor = Colors.grey,
+  int initialIndex = 0,
+}) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: ((BuildContext context) {
+      return BaseAutoPicker(
+        pickerHeight: pickerHeight,
+        pickerColor: pickerColor,
+        selectChange: (text, indexPath) {
+          return list(text, indexPath);
+        },
+        initialTitles: initialTitles,
+        initialIndex: initialIndex,
+        confirm: (selects) {
+          confirm(selects);
+        },
+      );
+    }),
+  );
+}
+
 class BaseAutoPicker extends StatefulWidget {
   /// 取消文言
   final String cancelText;
@@ -88,10 +117,15 @@ class _BaseAutoPickerState extends State<BaseAutoPicker> with TickerProviderStat
 
   /// 获取数据流
   _reloadModels(int section, int row) {
-    List<String> newTitles = widget.selectChange(models[section].itemTitles[row], PickerIndexPath(section: section, row: row,));
+    List<String> newTitles = widget.selectChange(
+        models[section].itemTitles[row],
+        PickerIndexPath(
+          section: section,
+          row: row,
+        ));
     List<PickerModel> tempModels = List();
-    if (models.length >= section+1) {
-      models.getRange(0, section+1).map((model){
+    if (models.length >= section + 1) {
+      models.getRange(0, section + 1).map((model) {
         tempModels.add(model);
       }).toList();
     }
@@ -101,7 +135,7 @@ class _BaseAutoPickerState extends State<BaseAutoPicker> with TickerProviderStat
       setState(() {
         models = tempModels;
       });
-      _reloadModels(section+1, 0);
+      _reloadModels(section + 1, 0);
     } else {
       setState(() {
         models = tempModels;
@@ -118,8 +152,10 @@ class _BaseAutoPickerState extends State<BaseAutoPicker> with TickerProviderStat
     // 设置动画
     if (!isAnimation) {
       isAnimation = true;
-      controller = AnimationController(duration: Duration(milliseconds: 200), vsync: this);
-      animation = Tween(begin: Offset(0.0, 1.0), end: Offset(0.0, 1-(widget.headerHeight+widget.pickerHeight)/height)).animate(controller);
+      controller = AnimationController(duration: Duration(milliseconds: 500), vsync: this);
+      animation =
+          Tween(begin: Offset(0.0, 1.0), end: Offset(0.0, 1 - (widget.headerHeight + widget.pickerHeight) / height))
+              .animate(controller);
       controller.forward();
     }
 
@@ -231,7 +267,6 @@ class PickerModel {
     this.currentIndex,
   });
 }
-
 
 class PickerIndexPath {
   int section;

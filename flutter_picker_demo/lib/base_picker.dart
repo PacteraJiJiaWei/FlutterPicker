@@ -48,6 +48,9 @@ class _BasePickerState extends State<BasePicker> {
   /// 用来控制手指滑动结束后list的位置
   FixedExtentScrollController controller;
 
+  /// 用来记录手指抬起时的index
+  int currentIndex;
+
   /// 创建遮盖层
   Widget _buildCoverScreen() {
     if (widget.color != null && widget.color.alpha < 255) return Container();
@@ -115,6 +118,9 @@ class _BasePickerState extends State<BasePicker> {
   @override
   void initState() {
     controller = FixedExtentScrollController(initialItem: widget.initialIndex);
+    controller.addListener(() {
+    });
+    currentIndex = widget.initialIndex;
     super.initState();
   }
 
@@ -122,29 +128,35 @@ class _BasePickerState extends State<BasePicker> {
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
-        Container(
-          height: widget.height,
-          width: widget.width,
-          child: ListWheelScrollView.useDelegate(
-            // 可以自动校正list滚动结束后的位置
-            controller: controller,
-            physics: const FixedExtentScrollPhysics(),
-            itemExtent: widget.itemExtent,
-            childDelegate: ListWheelChildBuilderDelegate(
-              builder: (context, index) {
-                return Container(
-                  color: widget.color,
-                  height: widget.itemExtent,
-                  alignment: Alignment.center,
-                  child: widget.itemBuilder(index),
-                );
+        Listener(
+          onPointerUp: (event) {
+            Future.delayed(Duration(milliseconds: 500), () {
+              if (widget.itemChanged != null) widget.itemChanged(currentIndex);
+            });
+          },
+          child: Container(
+            height: widget.height,
+            width: widget.width,
+            child: ListWheelScrollView.useDelegate(
+              // 可以自动校正list滚动结束后的位置
+              controller: controller,
+              physics: const FixedExtentScrollPhysics(),
+              itemExtent: widget.itemExtent,
+              childDelegate: ListWheelChildBuilderDelegate(
+                builder: (context, index) {
+                  return Container(
+                    color: widget.color,
+                    height: widget.itemExtent,
+                    alignment: Alignment.center,
+                    child: widget.itemBuilder(index),
+                  );
+                },
+                childCount: widget.itemCount,
+              ),
+              onSelectedItemChanged: (index) {
+                currentIndex = index;
               },
-              childCount: widget.itemCount,
             ),
-            onSelectedItemChanged: (index) {
-              print(index);
-              if (widget.itemChanged != null) widget.itemChanged(index);
-            },
           ),
         ),
         _buildCoverScreen(),
