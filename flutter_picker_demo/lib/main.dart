@@ -45,7 +45,6 @@ class _PickerDemoState extends State<PickerDemo> {
                       barrierDismissible: false,
                       builder: ((BuildContext context) {
                         return EasyPicker(
-                          pickerHeight: 150.0,
                           initialTitlesList: [
                             ['111', '222', '333'],
                             ['aaa', 'bbb', 'ccc']
@@ -83,7 +82,6 @@ class _PickerDemoState extends State<PickerDemo> {
                       barrierDismissible: false,
                       builder: ((BuildContext context) {
                         return EasyPicker(
-                          pickerHeight: 150.0,
                           selectChange: (context, text, indexPath) {
                             if (text == '11111') return ['aaa', 'sss', 'ddd'];
                             if (text == '3333333') return ['qqq', 'www', 'eee'];
@@ -100,7 +98,6 @@ class _PickerDemoState extends State<PickerDemo> {
                             '66666666',
                             '77777777'
                           ],
-                          initialIndex: 0,
                           confirm: (selects) {
                             setState(() => selectList = selects);
                           },
@@ -134,9 +131,7 @@ class _PickerDemoState extends State<PickerDemo> {
                       barrierDismissible: false,
                       builder: ((BuildContext context) {
                         return EasyPicker(
-                          pickerHeight: 150.0,
                           selectChange: (context, text, indexPath) {
-                            print(text);
                             if (text == '11111') {
                               Future.delayed(Duration(seconds: 1), () {
                                 EasyPicker.of(context).addNewTitles(['aaa', 'sss', 'ddd']);
@@ -168,7 +163,6 @@ class _PickerDemoState extends State<PickerDemo> {
                             '66666666',
                             '77777777'
                           ],
-                          initialIndex: 0,
                           confirm: (selects) {
                             setState(() => selectList = selects);
                           },

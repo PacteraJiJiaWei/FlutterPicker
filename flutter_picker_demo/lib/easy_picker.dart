@@ -66,7 +66,7 @@ class EasyPicker extends StatefulWidget {
     this.initialTitles,
     this.initialTitlesList,
     this.selectChange,
-    this.initialIndex,
+    this.initialIndex = 0,
     this.initialIndexList,
     this.confirm,
     this.async = false,
@@ -238,7 +238,6 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
                       child: Row(
                         children: models.map((model) {
                           int section = models.indexOf(model);
-                          print(model.currentIndex);
                           return BasePicker(
                             initialIndex: model.currentIndex,
                             height: widget.pickerHeight,
