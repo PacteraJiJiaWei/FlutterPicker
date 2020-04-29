@@ -126,6 +126,10 @@ class _BasePickerState extends State<BasePicker> {
 
   @override
   Widget build(BuildContext context) {
+    Future.delayed(Duration.zero, () {
+      // 如果index改变，滚动到最新index
+      if (controller.selectedItem != widget.initialIndex) controller.jumpToItem(widget.initialIndex);
+    });
     return Stack(
       children: <Widget>[
         Listener(
