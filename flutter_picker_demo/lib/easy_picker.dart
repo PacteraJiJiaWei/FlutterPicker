@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'base_picker.dart';
 
-typedef BaseAutoPickerSelectChange = List<String> Function(
-    BuildContext context, String text, PickerIndexPath indexPath);
+typedef BaseAutoPickerSelectChange = List<String> Function(BuildContext context, PickerIndexPath indexPath);
 typedef BaseAutoPickerConfirm = Function(List<String> titles);
 
-// ignore: must_be_immutable
 class EasyPicker extends StatefulWidget {
   /// 取消文言
   final String cancelText;
@@ -32,14 +30,14 @@ class EasyPicker extends StatefulWidget {
   /// picker高度
   final double pickerHeight;
 
+  /// picker的Item的高度
+  final double itemExtent;
+
   /// 初始文言数组
-  List<String> initialTitles;
+  final List<String> initialTitles;
 
   /// 所有文言数据
-  List<List<String>> initialTitlesList;
-
-  /// 异步加载数据
-  bool async;
+  final List<List<String>> initialTitlesList;
 
   /// 选中改变时的回调
   final BaseAutoPickerSelectChange selectChange;
@@ -53,6 +51,7 @@ class EasyPicker extends StatefulWidget {
   /// 点击完成时的回调
   final BaseAutoPickerConfirm confirm;
 
+  /// 固定数据模式
   EasyPicker({
     Key key,
     this.cancelText = '取消',
@@ -63,14 +62,34 @@ class EasyPicker extends StatefulWidget {
     this.pickerColor = Colors.white,
     this.headerHeight = 30.0,
     this.pickerHeight = 150.0,
-    this.initialTitles,
-    this.initialTitlesList,
+    this.itemExtent = 40.0,
+    List<List<String>> initialTitlesList,
     this.selectChange,
     this.initialIndex = 0,
     this.initialIndexList,
     this.confirm,
-    this.async = false,
-  }) : assert(initialTitles == null || initialTitlesList == null, 'initialTitles属性和initialTitlesList属性只能存在一个！');
+  })  : this.initialTitles = null,
+        this.initialTitlesList = initialTitlesList;
+
+  /// 自动加载数据模式
+  EasyPicker.auto({
+    Key key,
+    this.cancelText = '取消',
+    this.cancelTextStyle,
+    this.confirmText = '确认',
+    this.confirmTextStyle,
+    this.headerColor = Colors.white,
+    this.pickerColor = Colors.white,
+    this.headerHeight = 30.0,
+    this.pickerHeight = 150.0,
+    this.itemExtent = 40.0,
+    List<String> initialTitles,
+    this.selectChange,
+    this.initialIndex = 0,
+    this.initialIndexList,
+    this.confirm,
+  })  : this.initialTitles = initialTitles,
+        this.initialTitlesList = null;
 
   @override
   _EasyPickerState createState() => _EasyPickerState();
@@ -91,7 +110,7 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
 
   /// 记录数据
   List<PickerModel> models = List();
-  int currentSection = 0;
+  PickerIndexPath currentIndexPath = PickerIndexPath(section: -1, row: -1);
 
   @override
   void initState() {
@@ -101,6 +120,9 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
     if (widget.initialTitles != null) {
       PickerModel model = PickerModel(itemTitles: widget.initialTitles, currentIndex: widget.initialIndex ?? 0);
       models.add(model);
+      Future.delayed(Duration.zero, () {
+        _reloadModels(currentContext, PickerIndexPath(section: 0, row: widget.initialIndex ?? 0));
+      });
     } else {
       /// 默认全部加载
       widget.initialTitlesList.map((titles) {
@@ -117,24 +139,20 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
     PickerModel model = PickerModel(itemTitles: newTitles, currentIndex: 0);
     setState(() => models.add(model));
     SchedulerBinding.instance.addPostFrameCallback((Duration timestamp) {
-      _reloadModels(currentContext, models.length-1, 0);
+      _reloadModels(currentContext, PickerIndexPath(section: models.length - 1, row: 0));
     });
   }
 
   /// 自动获取数据流
-  _reloadModels(BuildContext context, int section, int row) {
-    List<String> newTitles = widget.selectChange(
-        context,
-        models[section].itemTitles[row],
-        PickerIndexPath(
-          section: section,
-          row: row,
-        ));
+  _reloadModels(BuildContext context, PickerIndexPath indexPath) {
+    if (currentIndexPath.section == indexPath.section && currentIndexPath.row == indexPath.row) return;
+    currentIndexPath = indexPath;
+    List<String> newTitles = widget.selectChange(context, indexPath);
     List<PickerModel> tempModels = List();
 
     // 更新展示数据列表
-    if (models.length >= section + 1) {
-      models.getRange(0, section + 1).map((model) {
+    if (models.length >= indexPath.section + 1) {
+      models.getRange(0, indexPath.section + 1).map((model) {
         tempModels.add(model);
       }).toList();
       setState(() => models = tempModels);
@@ -143,7 +161,7 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
       PickerModel model = PickerModel(itemTitles: newTitles, currentIndex: 0);
       tempModels.add(model);
       setState(() => models = tempModels);
-      _reloadModels(context, section + 1, 0);
+      _reloadModels(context, PickerIndexPath(section: indexPath.section + 1, row: 0));
     }
   }
 
@@ -166,11 +184,12 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
     return Builder(
       builder: (context) {
         currentContext = context;
+
         /// 首次自动加载下一项
         if (widget.initialTitles != null && firstLoad) {
           firstLoad = false;
           Future.delayed(Duration.zero, () {
-            _reloadModels(context, 0, widget.initialIndex ?? 0);
+            _reloadModels(context, PickerIndexPath(section: 0, row: widget.initialIndex ?? 0));
           });
         }
         return Material(
@@ -244,7 +263,7 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
                             width: width / models.length,
                             itemCount: model.itemTitles.length,
                             color: widget.pickerColor,
-                            itemExtent: 40.0,
+                            itemExtent: widget.itemExtent,
                             itemBuilder: (index) {
                               return Text(
                                 model.itemTitles[index],
@@ -258,7 +277,7 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
                             itemChanged: (row) {
                               models[section].currentIndex = row;
                               if (widget.selectChange != null && widget.initialTitles != null) {
-                                _reloadModels(context, section, row);
+                                _reloadModels(context, PickerIndexPath(section: section, row: row));
                               }
                             },
                           );

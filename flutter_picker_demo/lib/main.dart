@@ -81,12 +81,12 @@ class _PickerDemoState extends State<PickerDemo> {
                       context: context,
                       barrierDismissible: false,
                       builder: ((BuildContext context) {
-                        return EasyPicker(
-                          selectChange: (context, text, indexPath) {
-                            if (text == '11111') return ['aaa', 'sss', 'ddd'];
-                            if (text == '3333333') return ['qqq', 'www', 'eee'];
-                            if (text == 'qqq') return ['zzz', 'xxx', 'ccc'];
-                            if (text == 'zzz') return ['!!!', '@@@', '###'];
+                        return EasyPicker.auto(
+                          selectChange: (context, indexPath) {
+                            if (indexPath.section == 0 && indexPath.row == 0) return ['aaa', 'sss', 'ddd'];
+                            if (indexPath.section == 0 && indexPath.row == 2) return ['qqq', 'www', 'eee'];
+                            if (indexPath.section == 1 && indexPath.row == 0) return ['zzz', 'xxx', 'ccc'];
+                            if (indexPath.section == 2 && indexPath.row == 0) return ['!!!', '@@@', '###'];
                             return null;
                           },
                           initialTitles: [
@@ -111,7 +111,7 @@ class _PickerDemoState extends State<PickerDemo> {
                       borderRadius: BorderRadius.all(Radius.circular(5.0)),
                       color: Colors.white,
                     ),
-                    width: 120.0,
+                    width: 150.0,
                     height: 50.0,
                     margin: EdgeInsets.only(top: 30.0, bottom: 30.0),
                     alignment: Alignment.center,
@@ -130,24 +130,24 @@ class _PickerDemoState extends State<PickerDemo> {
                       context: context,
                       barrierDismissible: false,
                       builder: ((BuildContext context) {
-                        return EasyPicker(
-                          selectChange: (context, text, indexPath) {
-                            if (text == '11111') {
+                        return EasyPicker.auto(
+                          selectChange: (context, indexPath) {
+                            if (indexPath.section == 0 && indexPath.row == 0) {
                               Future.delayed(Duration(seconds: 1), () {
                                 EasyPicker.of(context).addNewTitles(['aaa', 'sss', 'ddd']);
                               });
                             }
-                            if (text == '3333333') {
+                            if (indexPath.section == 0 && indexPath.row == 2) {
                               Future.delayed(Duration(seconds: 1), () {
                                 EasyPicker.of(context).addNewTitles(['qqq', 'www', 'eee']);
                               });
                             }
-                            if (text == 'qqq') {
+                            if (indexPath.section == 1 && indexPath.row == 0) {
                               Future.delayed(Duration(seconds: 1), () {
                                 EasyPicker.of(context).addNewTitles(['zzz', 'xxx', 'ccc']);
                               });
                             }
-                            if (text == 'zzz') {
+                            if (indexPath.section == 2 && indexPath.row == 0) {
                               Future.delayed(Duration(seconds: 1), () {
                                 EasyPicker.of(context).addNewTitles(['!!!', '@@@', '###']);
                               });
@@ -180,7 +180,7 @@ class _PickerDemoState extends State<PickerDemo> {
                     height: 50.0,
                     alignment: Alignment.center,
                     child: Text(
-                      '自动加载延时picker',
+                      '延时自动加载picker',
                       style: TextStyle(
                         color: Colors.black,
                         fontSize: 14.0,
