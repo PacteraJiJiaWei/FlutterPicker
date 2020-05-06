@@ -107,7 +107,7 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
   bool isAnimation = false;
   bool firstLoad = true;
   BuildContext currentContext;
-
+  
   /// 记录数据
   List<PickerModel> models = List();
   PickerIndexPath currentIndexPath = PickerIndexPath(section: -1, row: -1);
@@ -152,6 +152,7 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
 
     // 更新展示数据列表
     if (models.length >= indexPath.section + 1) {
+      // 使用map防止类型不对报错
       models.getRange(0, indexPath.section + 1).map((model) {
         tempModels.add(model);
       }).toList();
@@ -183,15 +184,8 @@ class _EasyPickerState extends State<EasyPicker> with TickerProviderStateMixin {
 
     return Builder(
       builder: (context) {
+        // 保存当前context，方便外部获取state
         currentContext = context;
-
-        /// 首次自动加载下一项
-        if (widget.initialTitles != null && firstLoad) {
-          firstLoad = false;
-          Future.delayed(Duration.zero, () {
-            _reloadModels(context, PickerIndexPath(section: 0, row: widget.initialIndex ?? 0));
-          });
-        }
         return Material(
           color: Colors.transparent,
           child: Container(
